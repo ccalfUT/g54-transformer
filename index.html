@@ -1,68 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>Coordinate Transformer</title>
-    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
-    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+  <meta charset="UTF-8">
+  <title>G54 Transformer (JS Version)</title>
+  <style>
+    input { width: 80px; margin: 4px; }
+  </style>
 </head>
 <body>
-    <h2>G54 Coordinate Transformer</h2>
+  <h2>G54 Coordinate Transformer</h2>
+  X: <input id="x" type="number" value="100">  
+  Y: <input id="y" type="number" value="0">  
+  Z: <input id="z" type="number" value="0"><br>
+  A (deg): <input id="a" type="number" value="0">  
+  B (deg): <input id="b" type="number" value="0"><br>
+  <button onclick="transform()">Transform</button>
+  <pre id="out"></pre>
 
-    <label>X-position: <input type="number" id="x_input" /></label><br>
-    <label>Y-position: <input type="number" id="y_input" /></label><br>
-    <label>Z-position: <input type="number" id="z_input" /></label><br>
-    <label>A-angle (deg): <input type="number" id="a_input" /></label><br>
-    <label>B-angle (deg): <input type="number" id="b_input" /></label><br>
+  <script>
+    function deg2rad(deg) { return deg * Math.PI / 180; }
 
-    <button py-click="transform_coordinates">Transform</button>
+    function transform() {
+      const x = +document.getElementById('x').value;
+      const y = +document.getElementById('y').value;
+      const z = +document.getElementById('z').value;
+      const a = deg2rad(+document.getElementById('a').value);
+      const b = deg2rad(+document.getElementById('b').value);
 
-    <h3>Output:</h3>
-    <pre id="output">Waiting for input...</pre>
+      // Rotation A around X-axis
+      const Rx = [
+        [1, 0, 0],
+        [0, Math.cos(a), -Math.sin(a)],
+        [0, Math.sin(a),  Math.cos(a)]
+      ];
+      // Rotation B around Y-axis (after A)
+      const Ry = [
+        [ Math.cos(b), 0, Math.sin(b)],
+        [ 0,          1, 0],
+        [-Math.sin(b), 0, Math.cos(b)]
+      ];
 
-    <!-- Config: Declare packages -->
-    <py-config>
-        packages = ["sympy", "numpy"]
-    </py-config>
+      function mul(R, v) {
+        return [
+          R[0][0]*v[0] + R[0][1]*v[1] + R[0][2]*v[2],
+          R[1][0]*v[0] + R[1][1]*v[1] + R[1][2]*v[2],
+          R[2][0]*v[0] + R[2][1]*v[1] + R[2][2]*v[2]
+        ];
+      }
 
-    <!-- Python logic -->
-    <py-script>
-        import numpy as np
-        import sympy as sm
-        import sympy.physics.mechanics as me
-        from pyscript import Element
+      const v0 = [x, y, z];
+      const v1 = mul(Rx, v0);
+      const v2 = mul(Ry, v1);
 
-        def transform_coordinates(*args):
-            try:
-                x = float(Element("x_input").element.value)
-                y = float(Element("y_input").element.value)
-                z = float(Element("z_input").element.value)
-                angle_a = float(Element("a_input").element.value)
-                angle_b = float(Element("b_input").element.value)
-
-                # Define reference frames
-                N = me.ReferenceFrame('N')
-                A = me.ReferenceFrame('A')
-                B = me.ReferenceFrame('B')
-                a, b = sm.symbols('a b')
-
-                A.orient_axis(N, a, N.x)
-                B.orient_axis(A, b, A.y)
-
-                # Compute DCM and result
-                DCM = B.dcm(N).subs({a: angle_a * np.pi / 180, b: angle_b * np.pi / 180})
-                vector = sm.Matrix([x, y, z])
-                result = DCM * vector
-
-                output_text = (
-                    f"X: {result[0].evalf():.3f}\n"
-                    f"Y: {result[1].evalf():.3f}\n"
-                    f"Z: {result[2].evalf():.3f}"
-                )
-                Element("output").write(output_text)
-
-            except Exception as e:
-                Element("output").write(f"Error: {str(e)}")
-    </py-script>
+      document.getElementById('out').textContent = 
+        `X: ${v2[0].toFixed(3)}\nY: ${v2[1].toFixed(3)}\nZ: ${v2[2].toFixed(3)}`;
+    }
+  </script>
 </body>
 </html>
