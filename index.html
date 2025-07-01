@@ -1,24 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>G54 Transformer (JS Version)</title>
+  <meta charset="UTF-8" />
+  <title>G54 Coordinate Transformer</title>
   <style>
-    input { width: 80px; margin: 4px; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f4f8;
+      padding: 40px;
+      max-width: 500px;
+      margin: auto;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 4px;
+      font-weight: bold;
+      color: #444;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    pre {
+      background: #222;
+      color: #0f0;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 8px;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
   <h2>G54 Coordinate Transformer</h2>
-  X: <input id="x" type="number" value="100">  
-  Y: <input id="y" type="number" value="0">  
-  Z: <input id="z" type="number" value="0"><br>
-  A (deg): <input id="a" type="number" value="0">  
-  B (deg): <input id="b" type="number" value="0"><br>
-  <button onclick="transform()">Transform</button>
-  <pre id="out"></pre>
+
+  <label for="x">X-position:</label>
+  <input id="x" type="number" value="100" />
+
+  <label for="y">Y-position:</label>
+  <input id="y" type="number" value="0" />
+
+  <label for="z">Z-position:</label>
+  <input id="z" type="number" value="0" />
+
+  <label for="a">A-angle (deg):</label>
+  <input id="a" type="number" value="0" />
+
+  <label for="b">B-angle (deg):</label>
+  <input id="b" type="number" value="0" />
+
+  <button onclick="transform()">🔁 Transform Coordinates</button>
+
+  <pre id="out">Waiting for input...</pre>
 
   <script>
-    function deg2rad(deg) { return deg * Math.PI / 180; }
+    function deg2rad(deg) {
+      return deg * Math.PI / 180;
+    }
 
     function transform() {
       const x = +document.getElementById('x').value;
@@ -27,13 +96,11 @@
       const a = deg2rad(+document.getElementById('a').value);
       const b = deg2rad(+document.getElementById('b').value);
 
-      // Rotation A around X-axis
       const Rx = [
         [1, 0, 0],
         [0, Math.cos(a), -Math.sin(a)],
         [0, Math.sin(a),  Math.cos(a)]
       ];
-      // Rotation B around Y-axis (after A)
       const Ry = [
         [ Math.cos(b), 0, Math.sin(b)],
         [ 0,          1, 0],
@@ -52,7 +119,7 @@
       const v1 = mul(Rx, v0);
       const v2 = mul(Ry, v1);
 
-      document.getElementById('out').textContent = 
+      document.getElementById('out').textContent =
         `X: ${v2[0].toFixed(3)}\nY: ${v2[1].toFixed(3)}\nZ: ${v2[2].toFixed(3)}`;
     }
   </script>
