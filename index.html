@@ -66,7 +66,7 @@
   <h2>G54 Coordinate Transformer</h2>
 
   <label for="x">X-position:</label>
-  <input id="x" type="number" value="100" />
+  <input id="x" type="number" value="0" />
 
   <label for="y">Y-position:</label>
   <input id="y" type="number" value="0" />
@@ -86,7 +86,7 @@
 
   <script>
     function deg2rad(deg) {
-      return deg * Math.PI / 180;
+      return deg * (Math.PI / 180);
     }
 
     function transform() {
