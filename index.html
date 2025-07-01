@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Coordinate Transformer</title>
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+</head>
+<body>
+    <h2>G54 Coordinate Transformer</h2>
+
+    <label>X-position: <input type="number" id="x_input" /></label><br>
+    <label>Y-position: <input type="number" id="y_input" /></label><br>
+    <label>Z-position: <input type="number" id="z_input" /></label><br>
+    <label>A-angle (deg): <input type="number" id="a_input" /></label><br>
+    <label>B-angle (deg): <input type="number" id="b_input" /></label><br>
+
+    <button py-click="transform_coordinates">Transform</button>
+
+    <h3>Output:</h3>
+    <pre id="output">Waiting for input...</pre>
+
+    <!-- Config: Declare packages -->
+    <py-config>
+        packages = ["sympy", "numpy"]
+    </py-config>
+
+    <!-- Python logic -->
+    <py-script>
+        import numpy as np
+        import sympy as sm
+        import sympy.physics.mechanics as me
+        from pyscript import Element
+
+        def transform_coordinates(*args):
+            try:
+                x = float(Element("x_input").element.value)
+                y = float(Element("y_input").element.value)
+                z = float(Element("z_input").element.value)
+                angle_a = float(Element("a_input").element.value)
+                angle_b = float(Element("b_input").element.value)
+
+                # Define reference frames
+                N = me.ReferenceFrame('N')
+                A = me.ReferenceFrame('A')
+                B = me.ReferenceFrame('B')
+                a, b = sm.symbols('a b')
+
+                A.orient_axis(N, a, N.x)
+                B.orient_axis(A, b, A.y)
+
+                # Compute DCM and result
+                DCM = B.dcm(N).subs({a: angle_a * np.pi / 180, b: angle_b * np.pi / 180})
+                vector = sm.Matrix([x, y, z])
+                result = DCM * vector
+
+                output_text = (
+                    f"X: {result[0].evalf():.3f}\n"
+                    f"Y: {result[1].evalf():.3f}\n"
+                    f"Z: {result[2].evalf():.3f}"
+                )
+                Element("output").write(output_text)
+
+            except Exception as e:
+                Element("output").write(f"Error: {str(e)}")
+    </py-script>
+</body>
+</html>
